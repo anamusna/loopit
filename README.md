@@ -1,5 +1,7 @@
 # 🔁 LoopIt - Local Item Swapping Platform
 
+🌐 **Live App Preview**: https://loop-it.netlify.app/
+
 LoopIt helps people in their community swap things they no longer need instead of throwing them away. Got a dress you never wear? Books collecting dust? A chair that doesn't fit anymore? Find someone nearby who wants it and see what they have to offer in return.
 
 No money changes hands - just neighbors helping neighbors while keeping useful things out of landfills.
