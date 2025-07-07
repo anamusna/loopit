@@ -1,0 +1,22 @@
+{
+  "name": "LoopIt - Local Item Swapping Community",
+  "short_name": "LoopIt",
+  "description": "A trusted, local-first item swapping platform that helps you declutter, save money, and reduce waste while connecting neighbors in meaningful ways.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#1c1917",
+  "icons": [
+    {
+      "src": "/shared/images/32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/shared/images/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

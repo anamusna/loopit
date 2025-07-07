@@ -1,0 +1,42 @@
+{
+  "name": "@loopit/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A modern Next.js frontend project with TypeScript, Tailwind CSS, and Zustand state management",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "node scripts/copy-images.js && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "copy-images": "node scripts/copy-images.js"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-react": "^9.5.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-regular-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "clsx": "^2.1.1",
+    "next": "15.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-select": "^5.10.1",
+    "react-tailwindcss-datepicker": "^2.0.0",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5"
+  }
+}
