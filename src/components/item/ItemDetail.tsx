@@ -1,4 +1,5 @@
 "use client";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import { CarbonBadge } from "@/components/environmental";
 import { useSwapRequest } from "@/hooks/useSwapRequest";
 import { Item, ItemStatus } from "@/shared/types";
@@ -390,7 +391,17 @@ const SwapActionSection: React.FC<{
   isAuthenticated: boolean;
   onRequestSwap: () => void;
   onAddNewItem?: () => void;
-}> = ({ item, isOwner, isAuthenticated, onRequestSwap, onAddNewItem }) => {
+  router: any;
+  openLogin: () => void;
+}> = ({
+  item,
+  isOwner,
+  isAuthenticated,
+  onRequestSwap,
+  onAddNewItem,
+  router,
+  openLogin,
+}) => {
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
       case "swapped":
@@ -485,7 +496,7 @@ const SwapActionSection: React.FC<{
           <Button
             variant={ButtonVariant.GHOST}
             size={ButtonSize.SM}
-            onClick={onAddNewItem}
+            onClick={isAuthenticated ? onAddNewItem : openLogin}
             className="flex-1 border border-gray-200/60 dark:border-gray-700/60 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 rounded-lg"
           >
             <FontAwesomeIcon icon={faPlus} className="w-4 h-4 mr-2" />
@@ -501,16 +512,18 @@ const DeliveryInfoBox: React.FC = () => (
     <div className="flex items-center gap-2">
       <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 text-primary" />
       <span className="font-medium text-text-primary text-sm">
-        30 day return policy
+        Meet locally to swap
       </span>
     </div>
     <div className="flex items-center gap-2">
       <FontAwesomeIcon icon={faShare} className="w-4 h-4 text-primary" />
-      <span className="text-text-primary text-sm">Free delivery & returns</span>
+      <span className="text-text-primary text-sm">
+        No money involved - just trade
+      </span>
     </div>
     <div className="flex items-center gap-2">
       <span className="font-medium text-text-primary text-sm">
-        Standard delivery
+        Community exchange
       </span>
       <span className="text-success font-semibold ml-auto text-sm">free</span>
     </div>
@@ -656,10 +669,12 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
     closeSwapRequestModal,
     submitSwapRequest,
   } = useSwapRequest();
+  const { openLogin } = useAuthModal();
   const [item, setItem] = useState<Item | null>(null);
   const [isItemLoading, setIsItemLoading] = useState(true);
   const [isItemManagementModalOpen, setIsItemManagementModalOpen] =
     useState(false);
+
   useEffect(() => {
     const loadItem = async () => {
       setIsItemLoading(true);
@@ -677,10 +692,12 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
     };
     loadItem();
   }, [itemId, items, fetchItems]);
+
   const isOwner = item && user ? item.ownerId === user.id : false;
   const isSaved = item
     ? savedItems.some((saved) => saved.id === item.id)
     : false;
+
   const handleSave = useCallback(async () => {
     if (!item) return;
     try {
@@ -689,6 +706,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
       console.error("Failed to save item:", error);
     }
   }, [item, saveItem]);
+
   const handleUnsave = useCallback(async () => {
     if (!item) return;
     try {
@@ -697,6 +715,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
       console.error("Failed to unsave item:", error);
     }
   }, [item, unsaveItem]);
+
   const handleSaveItem = useCallback(
     async (itemToSave: Item) => {
       try {
@@ -707,6 +726,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
     },
     [saveItem]
   );
+
   const handleUnsaveItem = useCallback(
     async (itemToUnsave: Item) => {
       try {
@@ -717,25 +737,31 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
     },
     [unsaveItem]
   );
+
   const handleRequestSwap = useCallback(() => {
     if (!item) return;
     openSwapRequestModal(item);
   }, [item, openSwapRequestModal]);
+
   const handleOpenItemManagementModal = useCallback(() => {
     setIsItemManagementModalOpen(true);
   }, []);
+
   const handleCloseItemManagementModal = useCallback(() => {
     setIsItemManagementModalOpen(false);
   }, []);
+
   const handleItemClick = useCallback(
     (clickedItem: Item) => {
       router.push(`/item/${clickedItem.id}`);
     },
     [router]
   );
+
   const handleBack = useCallback(() => {
     router.back();
   }, [router]);
+
   if (isItemLoading || isLoading) {
     return (
       <Container className={clsx("py-4 md:py-8", className)}>
@@ -745,6 +771,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
       </Container>
     );
   }
+
   if (error) {
     return (
       <Container className={clsx("py-4 md:py-8", className)}>
@@ -756,6 +783,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
       </Container>
     );
   }
+
   if (!item) {
     return (
       <Container className={clsx("py-4 md:py-8", className)}>
@@ -777,6 +805,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
       </Container>
     );
   }
+
   return (
     <Container className={clsx("relative py-2 sm:py-4 md:py-6", className)}>
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
@@ -810,6 +839,8 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
               isAuthenticated={isAuthenticated}
               onRequestSwap={handleRequestSwap}
               onAddNewItem={handleOpenItemManagementModal}
+              router={router}
+              openLogin={openLogin}
             />
           </div>
 
@@ -891,6 +922,7 @@ export const ItemDetail: React.FC<ItemDetailProps> = ({
         isSubmitting={isSubmitting}
         error={swapError}
       />
+
       <ItemManagementModal
         isOpen={isItemManagementModalOpen}
         onClose={handleCloseItemManagementModal}

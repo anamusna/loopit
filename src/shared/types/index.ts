@@ -327,7 +327,7 @@ export interface SwapRequest {
   respondedAt?: Date;
 }
 export interface OfferedItem {
-  id?: string; 
+  id?: string;
   title: string;
   description: string;
   category: ItemCategory;
@@ -389,7 +389,7 @@ export enum ReviewFilterOption {
 }
 export interface ReviewCriteriaRating {
   criteria: ReviewCriteria;
-  rating: number; 
+  rating: number;
 }
 export interface ReviewHelpfulness {
   helpful: number;
@@ -425,11 +425,11 @@ export interface Review {
   swapRequestId: string;
   itemId: string;
   itemTitle: string;
-  overallRating: number; 
-  criteriaRatings?: ReviewCriteriaRating[]; 
+  overallRating: number;
+  criteriaRatings?: ReviewCriteriaRating[];
   comment?: string;
   isAnonymous: boolean;
-  isVerified: boolean; 
+  isVerified: boolean;
   status: ReviewStatus;
   moderationFlags?: ReviewModerationFlag[];
   helpfulness: ReviewHelpfulness;

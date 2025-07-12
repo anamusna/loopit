@@ -157,11 +157,11 @@ export function useHomepage(
   }, [clearError]);
   const handleItemClick = useCallback(
     (item: Item) => {
-      trackItemView(item.id);
+      //trackItemView(item.id);
       setSelectedItem(item);
       router.push(`/item/${item.id}`);
     },
-    [trackItemView, setSelectedItem, router]
+    [setSelectedItem, router]
   );
   const handleSaveItem = useCallback(
     async (item: Item) => {

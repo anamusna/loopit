@@ -944,9 +944,9 @@ const usersArray: UserProfile[] = [
   },
   {
     id: "2",
-    name: "Jane Smith",
+    name: "Lamin Darboe",
     email: "jane@example.com",
-    location: "Los Angeles, CA",
+    location: "Dumbuto",
     role: UserRole.USER,
     password: "",
     confirmPassword: "",
@@ -1012,18 +1012,13 @@ export const demoAccounts: Record<
   { password: string; user: UserProfile }
 > = {
   "lamin.admin@loopit.gm": {
-    password: "admin1234",
+    password: "demo1234",
     user: allUsers.find((u) => u.role === UserRole.SUPER_ADMIN)!,
   },
-  "fatou.admin@loopit.gm": {
-    password: "admin1234",
-    user: allUsers.find((u) => u.role === UserRole.ADMIN)!,
+  "fatou@loopit.gm": {
+    password: "demo1234",
+    user: allUsers.find((u) => u.role === UserRole.USER)!,
   },
-  ...Object.fromEntries(
-    allUsers
-      .filter((u) => u.role === UserRole.USER)
-      .map((u) => [u.email, { password: "demo1234", user: u }])
-  ),
 };
 export const getDemoAccount = (email: string) => {
   return demoAccounts[email as keyof typeof demoAccounts];

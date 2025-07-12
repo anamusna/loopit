@@ -1,4 +1,5 @@
 "use client";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import { useLoopItStore } from "@/store";
 import Button, { ButtonVariant } from "@/tailwind/components/elements/Button";
 import {
@@ -10,29 +11,37 @@ import { faArrowLeft, faHome } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 export default function NotFound() {
   const router = useRouter();
   const { isAuthenticated } = useLoopItStore();
+  const { openLogin, openRegister } = useAuthModal();
+
   const handleGoBack = () => {
     router.back();
   };
+
   const handleGoHome = () => {
     router.push("/");
   };
+
   const navLabel = [
     {
       label: "Browse Items",
-      link: "/",
+      link: "/items",
     },
     {
       label: isAuthenticated ? "Dashboard" : "Login",
-      link: isAuthenticated ? "/dashboard" : "/login",
+      action: isAuthenticated ? () => router.push("/dashboard") : openLogin,
     },
     {
       label: isAuthenticated ? "My Listings" : "Register",
-      link: isAuthenticated ? "/dashboard?tab=my-listings" : "/register",
+      action: isAuthenticated
+        ? () => router.push("/dashboard?tab=my-listings")
+        : openRegister,
     },
   ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/10">
       <Container className="min-h-screen flex items-center justify-center py-8">
@@ -88,11 +97,11 @@ export default function NotFound() {
               Popular Pages
             </Typography>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {navLabel.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.link}
-                  className="p-3 rounded-lg bg-card hover:bg-card/80 border border-border/30 transition-all duration-200 hover:shadow-md group"
+              {navLabel.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={item.action}
+                  className="p-3 rounded-lg bg-card hover:bg-card/80 border border-border/30 transition-all duration-200 hover:shadow-md group text-left"
                 >
                   <Typography
                     as={TypographyVariant.SMALL}
@@ -100,7 +109,7 @@ export default function NotFound() {
                   >
                     {item.label}
                   </Typography>
-                </Link>
+                </button>
               ))}
             </div>
           </div>

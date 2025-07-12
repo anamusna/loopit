@@ -4,6 +4,7 @@ import React, {
   forwardRef,
   useCallback,
   useEffect,
+  useId,
   useState,
 } from "react";
 export enum CarouselSize {
@@ -58,6 +59,7 @@ const Carousel = React.memo(
       },
       ref
     ) => {
+      const generatedId = useId();
       const [currentIndex, setCurrentIndex] = useState(0);
       const [isPlaying, setIsPlaying] = useState(autoPlay);
       const sizeStyles = {
@@ -138,8 +140,7 @@ const Carousel = React.memo(
         variantStyles[variant],
         className
       );
-      const carouselId =
-        id || `carousel-${Math.random().toString(36).substr(2, 9)}`;
+      const carouselId = id || `carousel-${generatedId}`;
       return (
         <div
           ref={ref}

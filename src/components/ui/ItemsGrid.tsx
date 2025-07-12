@@ -1,7 +1,8 @@
 "use client";
 import { Item } from "@/shared/types";
 import clsx from "clsx";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useCallback } from "react";
 import ListItem from "../item/ListItem";
 import ProductCard from "../item/ProductCard";
 export interface ItemsGridProps {
@@ -25,6 +26,16 @@ const ItemsGrid: React.FC<ItemsGridProps> = React.memo(
     viewMode,
     className = "",
   }) => {
+    const router = useRouter();
+
+    const handleItemClick = useCallback(
+      (item: Item) => {
+        router.push(`/item/${item.id}`);
+        // onItemClick(item);
+      },
+      [router]
+    );
+
     if (viewMode === "list") {
       return (
         <div className={clsx("space-y-4", className)}>
@@ -32,7 +43,7 @@ const ItemsGrid: React.FC<ItemsGridProps> = React.memo(
             <ListItem
               key={item.id}
               item={item}
-              onItemClick={onItemClick}
+              onItemClick={handleItemClick}
               onSaveItem={onSaveItem}
               onUnsaveItem={onUnsaveItem}
               isSaved={isItemSaved(item.id)}

@@ -122,25 +122,25 @@ export const FILTER_PRESETS = [
   {
     id: "trending",
     name: "Trending",
-    description: "Most viewed items this week",
+    description: "Popular electronics in Banjul",
     icon: "🔥",
   },
   {
     id: "eco-friendly",
     name: "Eco-Friendly",
-    description: "High carbon impact items",
+    description: "Excellent electronics in Serrekunda",
     icon: "🌱",
   },
   {
     id: "new-arrivals",
     name: "New Arrivals",
-    description: "Items listed in the last 24 hours",
+    description: "Recent items in Kanifing",
     icon: "🆕",
   },
   {
     id: "ending-soon",
     name: "Ending Soon",
-    description: "Items expiring in the next 3 days",
+    description: "Clothing expiring soon in Bakau",
     icon: "⏰",
   },
 ];
@@ -151,8 +151,8 @@ export const MAX_SAVED_SEARCHES = 10;
 export const DEFAULT_ITEMS_PER_PAGE = 24;
 export const MAX_ITEMS_PER_PAGE = 100;
 export const SEARCH_DEBOUNCE_MS = 300;
-export const LOCATION_DETECTION_TIMEOUT = 10000; 
-export const DEFAULT_LOCATION_RADIUS = 10; 
+export const LOCATION_DETECTION_TIMEOUT = 10000;
+export const DEFAULT_LOCATION_RADIUS = 10;
 export const RECOMMENDATION_WEIGHTS = {
   category: 0.3,
   location: 0.25,

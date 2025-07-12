@@ -7,6 +7,7 @@ import {
 } from "@/tailwind/components/elements/Typography";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { memo, useCallback } from "react";
 interface FooterProps {
@@ -32,10 +33,13 @@ const Footer = memo<FooterProps>(({ className = "" }) => {
             <div className="col-span-2 lg:col-span-1 space-y-2">
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <FontAwesomeIcon
-                    icon={ICONS.REACT as IconProp}
-                    className="text-lg sm:text-xl transition-all duration-200"
-                    style={{ color: "var(--primary)" }}
+                  <Image
+                    src="/shared/images/32x32.png"
+                    alt="LoopIt Logo"
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-contain transition-all duration-300 group-hover:scale-110"
+                    priority
                   />
                   <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg scale-150 opacity-60" />
                 </div>
@@ -97,7 +101,7 @@ const Footer = memo<FooterProps>(({ className = "" }) => {
               </Typography>
               <div className="space-y-1">
                 {[
-                  { label: "Browse Items", path: "/" },
+                  { label: "Browse Items", path: "/items" },
                   { label: "How It Works", path: "/how-it-works" },
                   { label: "Safety Tips", path: "/safety" },
                   { label: "Success Stories", path: "/stories" },

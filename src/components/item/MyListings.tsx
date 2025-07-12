@@ -1,4 +1,5 @@
 "use client";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import { useMyListings } from "@/hooks/useItems";
 import { Item, ItemStatus } from "@/shared/types";
 import { useLoopItStore } from "@/store";
@@ -25,14 +26,18 @@ import ChatList from "../chat/ChatList";
 import DeleteItemModal from "./DeleteItemModal";
 import { ItemManagementModal } from "./ItemManagementModal";
 import MyItemCard from "./MyItemCard";
+
 export interface MyListingsProps {
   className?: string;
 }
+
 type ViewMode = "grid" | "list";
 type SectionMode = "items" | "messages";
+
 export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
   const router = useRouter();
   const { unreadCount, user, getUserItems } = useLoopItStore();
+  const { openLogin } = useAuthModal();
   const userItems = getUserItems();
   const {
     filteredItems,
@@ -53,6 +58,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
     refreshInterval: 30000,
     initialItems: userItems,
   });
+
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sectionMode, setSectionMode] = useState<SectionMode>("items");
   const [itemToDelete, setItemToDelete] = useState<Item | null>(null);
@@ -63,6 +69,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+
   React.useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
@@ -71,9 +78,11 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
       return () => clearTimeout(timer);
     }
   }, [notification]);
+
   const handleDeleteClick = useCallback((item: Item) => {
     setItemToDelete(item);
   }, []);
+
   const handleDeleteConfirm = useCallback(async () => {
     if (!itemToDelete) return;
     try {
@@ -91,19 +100,23 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
       setItemToDelete(null);
     }
   }, [itemToDelete, handleDeleteItemAction]);
+
   const handleDeleteCancel = useCallback(() => {
     setItemToDelete(null);
   }, []);
+
   const handleEditClick = useCallback((item: Item) => {
     setItemToEdit(item);
     setIsItemManagementModalOpen(true);
   }, []);
+
   const handleItemClick = useCallback(
     (item: Item) => {
       router.push(`/item/${item.id}`);
     },
     [router]
   );
+
   const handleItemManagementSuccess = useCallback(
     (item: Item) => {
       const action = itemToEdit ? "updated" : "created";
@@ -117,10 +130,12 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
     },
     [itemToEdit, refreshItems]
   );
+
   const handleAddItemClick = useCallback(() => {
     setItemToEdit(null);
     setIsItemManagementModalOpen(true);
   }, []);
+
   if (!user) {
     return (
       <div className="text-center py-8">
@@ -130,20 +145,16 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
         >
           Please log in to view your items
         </Typography>
-        <Button
-          variant={ButtonVariant.PRIMARY}
-          onClick={() => router.push("/login")}
-        >
+        <Button variant={ButtonVariant.PRIMARY} onClick={openLogin}>
           Log In
         </Button>
       </div>
     );
   }
+
   return (
     <div className={clsx("py-2 sm:py-4 lg:py-6", className)}>
-      {}
       <div className="space-y-4 sm:space-y-6">
-        {}
         {error && (
           <Alert
             variant={AlertVariant.ERROR}
@@ -151,7 +162,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
             className="rounded-lg"
           />
         )}
-        {}
+
         {notification && (
           <Alert
             variant={
@@ -164,12 +175,10 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
             className="rounded-lg"
           />
         )}
-        {}
+
         {sectionMode === "items" ? (
           <div className="space-y-4 sm:space-y-6 ">
-            {}
             <div className="flex  flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
-              {}
               <div className="flex-1 w-full ">
                 <div className="relative">
                   <FontAwesomeIcon
@@ -185,9 +194,8 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
                   />
                 </div>
               </div>
-              {}
+
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                {}
                 <select
                   value={statusFilter}
                   onChange={(e) =>
@@ -205,7 +213,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
                     </option>
                   ))}
                 </select>
-                {}
+
                 <div className="hidden sm:flex bg-secondary/20 rounded-lg p-1">
                   <button
                     onClick={() => setViewMode("grid")}
@@ -230,7 +238,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
                     <FontAwesomeIcon icon={faList} className="w-4 h-4" />
                   </button>
                 </div>
-                {}
+
                 <Button
                   variant={ButtonVariant.PRIMARY}
                   size={ButtonSize.SM}
@@ -246,7 +254,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
                 </Button>
               </div>
             </div>
-            {}
+
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mx-auto gap-3 sm:gap-6">
                 {Array.from({ length: 8 }).map((_, index) => (
@@ -347,7 +355,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
           </div>
         )}
       </div>
-      {}
+
       <DeleteItemModal
         isOpen={!!itemToDelete}
         item={itemToDelete}
@@ -355,7 +363,7 @@ export const MyListings: React.FC<MyListingsProps> = ({ className = "" }) => {
         onCancel={handleDeleteCancel}
         isDeleting={false}
       />
-      {}
+
       <ItemManagementModal
         isOpen={isItemManagementModalOpen}
         onClose={() => {

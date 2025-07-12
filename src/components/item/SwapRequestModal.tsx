@@ -403,8 +403,10 @@ export const SwapRequestModal: React.FC<SwapRequestModalProps> = React.memo(
       location: "",
       tags: [],
     });
+
+    // Reset state when modal opens and item is available
     React.useEffect(() => {
-      if (!isOpen) {
+      if (isOpen && item) {
         setMessage("");
         setIncludeOfferedItem(false);
         setOfferedItem({
@@ -417,7 +419,8 @@ export const SwapRequestModal: React.FC<SwapRequestModalProps> = React.memo(
           tags: [],
         });
       }
-    }, [isOpen]);
+    }, [isOpen, item]);
+
     const handleSubmit = useCallback(
       async (e: React.FormEvent) => {
         e.preventDefault();
@@ -431,15 +434,21 @@ export const SwapRequestModal: React.FC<SwapRequestModalProps> = React.memo(
       },
       [item, message, includeOfferedItem, offeredItem, onSubmit]
     );
+
     const handleToggleOfferedItem = useCallback(() => {
       setIncludeOfferedItem((prev) => !prev);
     }, []);
+
     const handleOfferedItemChange = useCallback(
       (newOfferedItem: OfferedItem) => {
         setOfferedItem(newOfferedItem);
       },
       []
     );
+
+    // Don't render if no item is selected
+    if (!item) return null;
+
     return (
       <SwapRequestModalPresentation
         isOpen={isOpen}

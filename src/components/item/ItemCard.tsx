@@ -28,6 +28,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import SwapRequestModal from "./SwapRequestModal";
 interface ItemCardProps {
@@ -146,7 +147,7 @@ const ItemImage: React.FC<{
 }> = ({ item, statusConfig, onSave, isSaved, isLoading }) => {
   const [heartAnim, setHeartAnim] = useState(false);
   return (
-    <div className="relative aspect-[4/3] sm:aspect-[3/2] overflow-hidden group/itemcard">
+    <div className="relative aspect-[4/3] sm:aspect-[5/5] overflow-hidden group/itemcard">
       {item.images && item.images.length > 0 ? (
         <img
           src={item.images[0]}
@@ -237,8 +238,8 @@ const ItemContent: React.FC<{
   onSwapRequest: (e: React.MouseEvent) => void;
   isLoading: boolean;
 }> = ({ item, statusConfig, onSwapRequest, isLoading }) => (
-  <CardBody className="p-3 sm:p-4 space-y-3">
-    <div className="space-y-1.5">
+  <CardBody className="space-y-3 flex flex-col h-full">
+    <div className="flex-1 flex flex-col space-y-1.5 mb-5">
       <Typography
         as={TypographyVariant.H3}
         className="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg line-clamp-2 leading-tight group-hover:text-primary transition-colors duration-300"
@@ -257,78 +258,80 @@ const ItemContent: React.FC<{
           <span className="font-medium">{formatDate(item.createdAt)}</span>
         </div>
       </div>
-    </div>
-    <Typography
-      as={TypographyVariant.P}
-      className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 leading-relaxed"
-    >
-      {item.description}
-    </Typography>
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        {item.ownerAvatar ? (
-          <Image
-            src={item.ownerAvatar}
-            alt={item.ownerName}
-            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-gray-200/60 dark:border-gray-700/60"
-          />
-        ) : (
-          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center border border-gray-200/60 dark:border-gray-700/60">
-            <span className="text-primary font-bold text-xs">
-              {item.ownerName.charAt(0).toUpperCase()}
-            </span>
+      {/*    <Typography
+        as={TypographyVariant.P}
+        className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 leading-relaxed"
+      >
+        {item.description}
+      </Typography> */}
+      <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center gap-2">
+          {item.ownerAvatar ? (
+            <Image
+              src={item.ownerAvatar}
+              alt={item.ownerName}
+              className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover border border-gray-200/60 dark:border-gray-700/60"
+            />
+          ) : (
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center border border-gray-200/60 dark:border-gray-700/60">
+              <span className="text-primary font-bold text-xs">
+                {item.ownerName.charAt(0).toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span className="font-medium text-gray-700 dark:text-gray-300 text-sm truncate max-w-20 sm:max-w-none">
+            {item.ownerName}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-500">
+          <div className="flex items-center gap-1">
+            <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
+            <span className="text-xs font-medium">{item.views}</span>
           </div>
-        )}
-        <span className="font-medium text-gray-700 dark:text-gray-300 text-sm truncate max-w-20 sm:max-w-none">
-          {item.ownerName}
-        </span>
-      </div>
-      <div className="flex items-center gap-3 text-gray-500 dark:text-gray-500">
-        <div className="flex items-center gap-1">
-          <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
-          <span className="text-xs font-medium">{item.views}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <FontAwesomeIcon icon={faHeart} className="w-3 h-3" />
-          <span className="text-xs font-medium">{item.saves}</span>
+          <div className="flex items-center gap-1">
+            <FontAwesomeIcon icon={faHeart} className="w-3 h-3" />
+            <span className="text-xs font-medium">{item.saves}</span>
+          </div>
         </div>
       </div>
-    </div>
-    {item.tags && item.tags.length > 0 && (
-      <div className="flex flex-wrap gap-1">
-        {item.tags.slice(0, 2).map((tag, index) => (
-          <span
-            key={index}
-            className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium"
-          >
-            #{tag}
-          </span>
-        ))}
-        {item.tags.length > 2 && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs">
-            +{item.tags.length - 2}
-          </span>
-        )}
-      </div>
-    )}
-    <Button
-      variant={statusConfig.button.variant}
-      size={ButtonSize.MD}
-      onClick={onSwapRequest}
-      disabled={isLoading || statusConfig.button.disabled}
-      className={clsx(
-        "w-full font-semibold transition-all duration-300 group/button",
-        "hover:scale-[1.02] active:scale-[0.98]",
-        statusConfig.button.variant === ButtonVariant.PRIMARY &&
-          "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
+      {item.tags && item.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-2">
+          {item.tags.slice(0, 2).map((tag, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium"
+            >
+              #{tag}
+            </span>
+          ))}
+          {item.tags.length > 2 && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs">
+              +{item.tags.length - 2}
+            </span>
+          )}
+        </div>
       )}
-    >
-      <FontAwesomeIcon
-        icon={statusConfig.button.icon}
-        className="w-3.5 h-3.5 mr-2 transition-transform duration-200 group-hover/button:scale-110"
-      />
-      <span className="text-sm">{statusConfig.button.text}</span>
-    </Button>
+    </div>
+    <div className="mt-auto pt-2">
+      <Button
+        variant={statusConfig.button.variant}
+        size={ButtonSize.MD}
+        onClick={onSwapRequest}
+        disabled={isLoading || statusConfig.button.disabled}
+        className={clsx(
+          "w-full font-semibold transition-all duration-300 group/button",
+          "hover:scale-[1.02] active:scale-[0.98]",
+          statusConfig.button.variant === ButtonVariant.PRIMARY &&
+            "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
+        )}
+      >
+        <FontAwesomeIcon
+          icon={statusConfig.button.icon}
+          className="w-3.5 h-3.5 mr-2 transition-transform duration-200 group-hover/button:scale-110"
+        />
+        <span className="text-sm">{statusConfig.button.text}</span>
+      </Button>
+    </div>
   </CardBody>
 );
 const ItemCard: React.FC<ItemCardProps> = React.memo(
@@ -352,6 +355,9 @@ const ItemCard: React.FC<ItemCardProps> = React.memo(
       closeSwapRequestModal,
       submitSwapRequest,
     } = useSwapRequest();
+
+    const router = useRouter();
+
     const [saving, setSaving] = useState(false);
     const isOwnItem = useMemo(
       () => (user ? item.ownerId === user.id : false),
@@ -365,6 +371,7 @@ const ItemCard: React.FC<ItemCardProps> = React.memo(
       () => getStatusConfig(item, isOwnItem, isAuthenticated),
       [item, isOwnItem, isAuthenticated]
     );
+
     const handleSaveToggle = useCallback(
       async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -378,6 +385,7 @@ const ItemCard: React.FC<ItemCardProps> = React.memo(
       },
       [isSaved, saveItem, unsaveItem, item.id]
     );
+
     const handleSwapRequest = useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -385,9 +393,12 @@ const ItemCard: React.FC<ItemCardProps> = React.memo(
       },
       [openSwapRequestModal, item]
     );
+
     const handleItemClick = useCallback(() => {
+      router.push(`/item/${item.id}`);
       onItemClick?.(item);
     }, [onItemClick, item]);
+
     return (
       <>
         <Card
@@ -418,6 +429,7 @@ const ItemCard: React.FC<ItemCardProps> = React.memo(
 
           <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-primary/30 group-hover:shadow-[0_0_24px_0_rgba(var(--primary-rgb),0.10)] transition-all duration-500" />
         </Card>
+
         <SwapRequestModal
           isOpen={isModalOpen}
           onClose={closeSwapRequestModal}
@@ -430,5 +442,6 @@ const ItemCard: React.FC<ItemCardProps> = React.memo(
     );
   }
 );
+
 ItemCard.displayName = "ItemCard";
 export default ItemCard;

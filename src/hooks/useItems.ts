@@ -8,7 +8,7 @@ import {
 } from "@/shared/types";
 import { useLoopItStore } from "@/store";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 export interface UseItemsOptions {
   initialFilters?: SearchFilters;
   enableUrlSync?: boolean;
@@ -115,9 +115,23 @@ export function useItems(options: UseItemsOptions = {}): UseItemsReturn {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
   const paginatedItems = filteredItems.slice(startIndex, endIndex);
+
+  const prevSearchState = useRef({ searchQuery, filters });
+
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, filters]);
+    const currentSearchState = { searchQuery, filters };
+    const prevState = prevSearchState.current;
+
+    const searchChanged = prevState.searchQuery !== searchQuery;
+    const filtersChanged =
+      JSON.stringify(prevState.filters) !== JSON.stringify(filters);
+
+    if ((searchChanged || filtersChanged) && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+
+    prevSearchState.current = currentSearchState;
+  }, [searchQuery, filters, currentPage]);
   const totalItems = filteredItems.length;
   const hasActiveFilters = useMemo(() => {
     return (
@@ -200,11 +214,11 @@ export function useItems(options: UseItemsOptions = {}): UseItemsReturn {
   }, [totalPages]);
   const handleItemClick = useCallback(
     (item: Item) => {
-      trackItemView(item.id);
+      //trackItemView(item.id);
       setSelectedItem(item);
       router.push(`/item/${item.id}`);
     },
-    [trackItemView, setSelectedItem, router]
+    [setSelectedItem, router]
   );
   const handleSaveItem = useCallback(
     async (item: Item) => {
@@ -240,8 +254,24 @@ export function useItems(options: UseItemsOptions = {}): UseItemsReturn {
   const refreshItems = useCallback(() => {
     fetchItems();
   }, [fetchItems]);
+
+  const prevUrlState = useRef({ searchQuery, filters, currentPage });
+
   useEffect(() => {
     if (!enableUrlSync) return;
+
+    const currentState = { searchQuery, filters, currentPage };
+    const prevState = prevUrlState.current;
+
+    const searchChanged = prevState.searchQuery !== searchQuery;
+    const filtersChanged =
+      JSON.stringify(prevState.filters) !== JSON.stringify(filters);
+    const pageChanged = prevState.currentPage !== currentPage;
+
+    if (!searchChanged && !filtersChanged && !pageChanged) {
+      return;
+    }
+
     const params = new URLSearchParams();
     if (searchQuery) {
       params.set("search", searchQuery);
@@ -261,7 +291,12 @@ export function useItems(options: UseItemsOptions = {}): UseItemsReturn {
     const newUrl = params.toString()
       ? `${window.location.pathname}?${params.toString()}`
       : window.location.pathname;
-    window.history.replaceState(null, "", newUrl);
+
+    if (newUrl !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, "", newUrl);
+    }
+
+    prevUrlState.current = currentState;
   }, [searchQuery, filters, currentPage, enableUrlSync]);
   useEffect(() => {
     if (!enableUrlSync) return;

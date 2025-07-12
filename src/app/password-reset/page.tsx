@@ -1,4 +1,5 @@
 "use client";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import { usePasswordReset } from "@/hooks/usePasswordReset";
 import { useLoopItStore } from "@/store";
 import Button, {
@@ -8,12 +9,15 @@ import Button, {
 import Card from "@/tailwind/components/layout/Card";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
+
 const PasswordResetContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const { validateResetToken, resetPassword, isResetting } = usePasswordReset();
   const { validatePasswordResetToken } = useLoopItStore();
+  const { openLogin } = useAuthModal();
+
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
@@ -26,6 +30,7 @@ const PasswordResetContent: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null);
+
   useEffect(() => {
     if (token) {
       const valid = validatePasswordResetToken(token);
@@ -38,6 +43,7 @@ const PasswordResetContent: React.FC = () => {
       setValidationErrors({ token: "No reset token provided" });
     }
   }, [token, validatePasswordResetToken]);
+
   const validateForm = () => {
     const errors: typeof validationErrors = {};
     if (!formData.password) {
@@ -56,6 +62,7 @@ const PasswordResetContent: React.FC = () => {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm() || !token || !isTokenValid) {
@@ -64,7 +71,7 @@ const PasswordResetContent: React.FC = () => {
     try {
       const success = await resetPassword(token, formData.password);
       if (success) {
-        router.push("/login?message=password-reset-success");
+        openLogin();
       } else {
         setValidationErrors({
           token: "Password reset failed. Please try again.",
@@ -77,12 +84,14 @@ const PasswordResetContent: React.FC = () => {
       });
     }
   };
+
   const isFormValid =
     formData.password &&
     formData.confirmPassword &&
     formData.password === formData.confirmPassword &&
     formData.password.length >= 8 &&
     /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password);
+
   if (isTokenValid === null) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
@@ -104,6 +113,7 @@ const PasswordResetContent: React.FC = () => {
       </div>
     );
   }
+
   if (!isTokenValid) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
@@ -123,7 +133,7 @@ const PasswordResetContent: React.FC = () => {
             </div>
             <div className="space-y-3">
               <Button
-                onClick={() => router.push("/login")}
+                onClick={openLogin}
                 variant={ButtonVariant.PRIMARY}
                 size={ButtonSize.MD}
                 className="w-full"
@@ -131,7 +141,7 @@ const PasswordResetContent: React.FC = () => {
                 Return to Login
               </Button>
               <Button
-                onClick={() => router.push("/login?show=password-reset")}
+                onClick={openLogin}
                 variant={ButtonVariant.SECONDARY}
                 size={ButtonSize.MD}
                 className="w-full"
@@ -144,6 +154,7 @@ const PasswordResetContent: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
       <Card className="w-full container mx-auto max-w-md">
@@ -277,7 +288,7 @@ const PasswordResetContent: React.FC = () => {
               Remember your password?{" "}
               <button
                 type="button"
-                onClick={() => router.push("/login")}
+                onClick={openLogin}
                 className="font-medium text-primary hover:text-primary-hover transition-colors underline"
                 disabled={isResetting}
               >
@@ -290,6 +301,7 @@ const PasswordResetContent: React.FC = () => {
     </div>
   );
 };
+
 const PasswordResetPage: React.FC = () => {
   return (
     <Suspense
@@ -317,4 +329,5 @@ const PasswordResetPage: React.FC = () => {
     </Suspense>
   );
 };
+
 export default PasswordResetPage;

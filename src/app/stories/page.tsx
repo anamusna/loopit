@@ -1,6 +1,7 @@
 "use client";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import Button, {
   ButtonSize,
   ButtonVariant,
@@ -105,6 +106,8 @@ const testimonials = [
 ];
 export default function Stories() {
   const router = useRouter();
+  const { openLogin, openRegister } = useAuthModal();
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -302,10 +305,10 @@ export default function Stories() {
                   <Button
                     variant={ButtonVariant.PRIMARY}
                     size={ButtonSize.LG}
-                    onClick={() => router.push("/register")}
+                    onClick={openRegister}
                     className="group transform hover:scale-105 transition-all duration-300"
                   >
-                    Join LoopIt Today
+                    Create Free Account
                     <FontAwesomeIcon
                       icon={faArrowRight}
                       className="ml-2 group-hover:translate-x-1 transition-transform duration-300"

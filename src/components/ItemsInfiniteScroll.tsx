@@ -18,7 +18,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import clsx from "clsx";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import ItemCard from "./item/ItemCard";
 interface ScrollState {
   displayedItems: Item[];
@@ -279,51 +285,52 @@ const useScrollState = (
   itemsPerLoad: number,
   viewMode: "grid" | "list" | "masonry"
 ) => {
-  const [state, setState] = useState<ScrollState>({
-    displayedItems: [],
-    loadedCount: itemsPerLoad,
-    isLoadingMore: false,
-    currentViewMode: viewMode,
-  });
-  const updateDisplayedItems = useCallback(() => {
-    const itemsToShow = items.slice(0, state.loadedCount);
-    setState((prev) => ({ ...prev, displayedItems: itemsToShow }));
-  }, [items, state.loadedCount]);
+  const [loadedCount, setLoadedCount] = useState(itemsPerLoad);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentViewMode, setCurrentViewMode] = useState(viewMode);
+
+  const displayedItems = useMemo(() => {
+    return items.slice(0, loadedCount);
+  }, [items, loadedCount]);
+
   const resetPagination = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      loadedCount: itemsPerLoad,
-      isLoadingMore: false,
-    }));
+    setLoadedCount(itemsPerLoad);
+    setIsLoadingMore(false);
   }, [itemsPerLoad]);
+
   const updateViewMode = useCallback(
     (newViewMode: "grid" | "list" | "masonry") => {
-      setState((prev) => ({ ...prev, currentViewMode: newViewMode }));
+      setCurrentViewMode(newViewMode);
     },
     []
   );
+
   const loadMore = useCallback(
     (newItemsPerLoad: number) => {
-      setState((prev) => ({
-        ...prev,
-        isLoadingMore: true,
-        loadedCount: Math.min(prev.loadedCount + newItemsPerLoad, items.length),
-      }));
+      setIsLoadingMore(true);
+      setLoadedCount((prev) => Math.min(prev + newItemsPerLoad, items.length));
       setTimeout(() => {
-        setState((prev) => ({ ...prev, isLoadingMore: false }));
+        setIsLoadingMore(false);
       }, 300);
     },
     [items.length]
   );
-  useEffect(() => {
-    updateDisplayedItems();
-  }, [updateDisplayedItems]);
+
   useEffect(() => {
     resetPagination();
   }, [items, resetPagination]);
+
   useEffect(() => {
     updateViewMode(viewMode);
   }, [viewMode, updateViewMode]);
+
+  const state = {
+    displayedItems,
+    loadedCount,
+    isLoadingMore,
+    currentViewMode,
+  };
+
   return { state, loadMore };
 };
 const useInfiniteScroll = (

@@ -16,7 +16,7 @@ interface LocationInputProps {
   onLocationPermissionRequest?: () => Promise<boolean>;
   showLocationPermissionButton?: boolean;
 }
-const GAMBIA_LOCATIONS = [
+export const GAMBIA_LOCATIONS = [
   "Banjul",
   "Serrekunda",
   "Kanifing",
@@ -52,11 +52,11 @@ const GAMBIA_LOCATIONS = [
   "Koina",
   "Kerewan",
   "Farafenni",
-  "Kuntaur",
   "Mansa Konko",
   "Soma",
   "Kaiaf",
 ];
+
 const LocationInput: React.FC<LocationInputProps> = React.memo(
   ({
     value,

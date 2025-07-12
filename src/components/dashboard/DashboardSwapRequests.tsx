@@ -212,7 +212,7 @@ export const DashboardSwapRequests: React.FC = () => {
           <Button
             variant={ButtonVariant.PRIMARY}
             size={ButtonSize.MD}
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/items")}
             className="w-full sm:w-auto sm:min-w-[180px] min-h-[44px] sm:min-h-[48px] font-medium"
           >
             <FontAwesomeIcon

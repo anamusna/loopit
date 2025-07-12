@@ -31,7 +31,7 @@ export const SavedItems: React.FC = () => {
     router.push(`/item/${item.id}`);
   };
   const handleBrowseItems = () => {
-    router.push("/");
+    router.push("/items");
   };
   if (isLoading) {
     return (

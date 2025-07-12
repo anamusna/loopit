@@ -1,6 +1,6 @@
 "use client";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import { useEmailVerification } from "@/hooks/useEmailVerification";
-import { useLoopItStore } from "@/store";
 import Button, {
   ButtonSize,
   ButtonVariant,
@@ -8,54 +8,47 @@ import Button, {
 import Card from "@/tailwind/components/layout/Card";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
+
 const EmailVerificationContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const { verifyEmail, isVerifying, isEmailVerified, sendVerificationEmail } =
-    useEmailVerification();
-  const {
-    verifyEmail: storeVerifyEmail,
-    isEmailVerified: storeIsEmailVerified,
-  } = useLoopItStore();
+  const verificationToken = searchParams.get("token");
+  const { verifyEmail, resendVerificationEmail } = useEmailVerification();
+  const { openLogin } = useAuthModal();
   const [verificationStatus, setVerificationStatus] = useState<
-    "pending" | "success" | "error" | "verifying"
+    "verifying" | "success" | "error" | "pending"
   >("pending");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  useEffect(() => {
+    if (verificationToken) {
+      handleEmailVerification(verificationToken);
+    }
+  }, [verificationToken]);
+
   const handleEmailVerification = async (verificationToken: string) => {
     setVerificationStatus("verifying");
-    setErrorMessage("");
     try {
       const success = await verifyEmail(verificationToken);
       if (success) {
         setVerificationStatus("success");
         setTimeout(() => {
-          router.push("/login?verified=true");
+          router.push("/profile-setup");
         }, 2000);
       } else {
         setVerificationStatus("error");
-        setErrorMessage("Email verification failed. Please try again.");
+        setErrorMessage("Invalid or expired verification token.");
       }
-    } catch (err) {
+    } catch (error) {
       setVerificationStatus("error");
-      setErrorMessage("An error occurred during verification.");
+      setErrorMessage("Verification failed. Please try again.");
     }
   };
-  useEffect(() => {
-    if (token) {
-      handleEmailVerification(token);
-    }
-  }, [token, handleEmailVerification]);
+
   const handleResendVerification = async () => {
     try {
-      const { user } = useLoopItStore.getState();
-      if (!user?.email) {
-        setErrorMessage("No email address found. Please log in again.");
-        return;
-      }
-      const success = await sendVerificationEmail(user.email);
+      const success = await resendVerificationEmail();
       if (success) {
-        setErrorMessage("");
         alert("Verification email sent! Please check your inbox.");
       } else {
         setErrorMessage("Failed to send verification email. Please try again.");
@@ -64,9 +57,11 @@ const EmailVerificationContent: React.FC = () => {
       setErrorMessage("Failed to send verification email. Please try again.");
     }
   };
+
   const handleBackToLogin = () => {
-    router.push("/login");
+    openLogin();
   };
+
   if (verificationStatus === "verifying") {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
@@ -88,6 +83,7 @@ const EmailVerificationContent: React.FC = () => {
       </div>
     );
   }
+
   if (verificationStatus === "success") {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
@@ -120,6 +116,7 @@ const EmailVerificationContent: React.FC = () => {
       </div>
     );
   }
+
   if (verificationStatus === "error") {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
@@ -160,6 +157,7 @@ const EmailVerificationContent: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 bg-background">
       <Card className="w-full container mx-auto max-w-md">
@@ -227,6 +225,7 @@ const EmailVerificationContent: React.FC = () => {
     </div>
   );
 };
+
 const EmailVerificationPage: React.FC = () => {
   return (
     <Suspense
@@ -254,4 +253,5 @@ const EmailVerificationPage: React.FC = () => {
     </Suspense>
   );
 };
+
 export default EmailVerificationPage;

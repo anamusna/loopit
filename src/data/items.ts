@@ -17,13 +17,10 @@ const CARBON_SAVINGS_BY_CATEGORY: Record<ItemCategory, number> = {
   [ItemCategory.OTHER]: 10,
 };
 
-// Default expiration period (30 days)
 export const DEFAULT_EXPIRATION_DAYS = 30;
 
-// Boost duration (7 days)
 export const BOOST_DURATION_DAYS = 7;
 
-// Export all items directly
 export const allItems = [
   // Super Admin (Lamin Sanneh) - Platform admin items
   {
@@ -609,7 +606,7 @@ export const allItems = [
     changeHistory: [],
   },
 
-  // Jane Smith
+  // Lamin Darboe
   {
     id: "item_u10_001",
     title: "Yoga and Meditation Set",
@@ -621,9 +618,9 @@ export const allItems = [
     images: [
       "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop",
     ],
-    location: "Los Angeles, CA",
+    location: "Dumbuto",
     ownerId: "2",
-    ownerName: "Jane Smith",
+    ownerName: "Lamin Darboe",
     ownerAvatar: "https://i.pravatar.cc/150?img=15",
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-01-15"),

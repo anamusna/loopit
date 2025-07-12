@@ -21,8 +21,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
+import { GAMBIA_LOCATIONS } from "./profile/LocationInput";
 interface SearchState {
   query: string;
   filters: SearchFilters;
@@ -46,6 +48,8 @@ export interface SearchAndFiltersProps extends SearchActions {
   showPresets?: boolean;
   showSuggestions?: boolean;
   compact?: boolean;
+  onFilterRemove?: (key: keyof SearchFilters) => void;
+  onClearAllFilters?: () => void;
 }
 const CATEGORY_OPTIONS = [
   { value: "", label: "All Categories" },
@@ -58,6 +62,15 @@ const CATEGORY_OPTIONS = [
   { value: ItemCategory.HOUSEHOLD, label: "🏠 Household" },
   { value: ItemCategory.OTHER, label: "📦 Other" },
 ];
+
+const LOCATION_OPTIONS = [
+  { value: "", label: "All Locations" },
+  ...GAMBIA_LOCATIONS.map((location) => ({
+    value: location,
+    label: location,
+  })),
+];
+
 const CONDITION_OPTIONS = [
   { value: "", label: "All Conditions" },
   { value: ItemCondition.EXCELLENT, label: "🌟 Excellent" },
@@ -68,16 +81,28 @@ const CONDITION_OPTIONS = [
 const getPresetFilters = (presetId: string): SearchFilters => {
   switch (presetId) {
     case "trending":
-      return {};
+      return {
+        category: ItemCategory.ELECTRONICS,
+        location: "Banjul",
+        condition: ItemCondition.GOOD,
+      };
     case "eco-friendly":
       return {
         category: ItemCategory.ELECTRONICS,
         condition: ItemCondition.EXCELLENT,
+        location: "Serrekunda",
       };
     case "new-arrivals":
-      return {};
+      return {
+        location: "Kanifing",
+        condition: ItemCondition.EXCELLENT,
+      };
     case "ending-soon":
-      return {};
+      return {
+        category: ItemCategory.CLOTHING,
+        location: "Bakau",
+        condition: ItemCondition.GOOD,
+      };
     default:
       return {};
   }
@@ -98,6 +123,7 @@ const SearchInput: React.FC<{
   placeholder: string;
   isLoading: boolean;
   inputRef: React.RefObject<HTMLInputElement | null>;
+  filterToggle?: React.ReactNode;
 }> = ({
   value,
   onChange,
@@ -107,6 +133,7 @@ const SearchInput: React.FC<{
   placeholder,
   isLoading,
   inputRef,
+  filterToggle,
 }) => {
   const trimmedValue = value.trim();
   const canSearch = trimmedValue.length >= 3 || trimmedValue.length === 0;
@@ -156,6 +183,7 @@ const SearchInput: React.FC<{
             className="w-full pl-12 pr-16 py-3 sm:py-4 text-sm sm:text-base bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border-0 rounded-2xl focus:outline-none focus:ring-0 transition-all duration-300"
           />
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+            {filterToggle && <div className="mr-1">{filterToggle}</div>}
             {value && (
               <button
                 type="button"
@@ -199,12 +227,14 @@ const SearchInput: React.FC<{
     </form>
   );
 };
+
 const SearchSuggestions: React.FC<{
   show: boolean;
   query: string;
   onSelect: (suggestion: string) => void;
   anchorRef?: React.RefObject<HTMLDivElement | null>;
-}> = ({ show, query, onSelect, anchorRef }) => {
+  children?: React.ReactNode;
+}> = ({ show, query, onSelect, anchorRef, children }) => {
   const filteredSuggestions = useMemo(() => {
     if (!query.trim()) return SEARCH_SUGGESTIONS.slice(0, 4);
     return SEARCH_SUGGESTIONS.filter((suggestion) =>
@@ -235,8 +265,11 @@ const SearchSuggestions: React.FC<{
     >
       <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200/60 dark:border-gray-700/60 rounded-xl shadow-2xl overflow-hidden z-[99999]">
         <div className="p-2">
-          <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 mb-1">
-            Quick Suggestions
+          <div className="flex items-center justify-between mb-1">
+            <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-800">
+              Quick Suggestions
+            </div>
+            {children && <div className="ml-2">{children}</div>}
           </div>
           {filteredSuggestions.map((suggestion, index) => (
             <button
@@ -263,36 +296,7 @@ const SearchSuggestions: React.FC<{
   }
   return dropdown;
 };
-const FilterPresets: React.FC<{
-  selectedPreset: string | null;
-  onSelect: (presetId: string) => void;
-}> = ({ selectedPreset, onSelect }) => (
-  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-    {FILTER_PRESETS.map((preset) => (
-      <button
-        key={preset.id}
-        type="button"
-        onClick={() => onSelect(preset.id)}
-        className={clsx(
-          "flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300",
-          "text-xs font-medium hover:scale-105 active:scale-95 relative group",
-          selectedPreset === preset.id
-            ? "bg-gradient-to-r from-primary to-accent text-white shadow-md shadow-primary/20 ring-2 ring-primary/30 animate-pulse"
-            : "bg-gray-100/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 hover:shadow-md"
-        )}
-        title={preset.description}
-      >
-        <span className="text-xs">{preset.icon}</span>
-        <span className="whitespace-nowrap hidden sm:inline">
-          {preset.name}
-        </span>
-        {selectedPreset === preset.id && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900 animate-pulse" />
-        )}
-      </button>
-    ))}
-  </div>
-);
+
 const FilterToggle: React.FC<{
   isOpen: boolean;
   activeCount: number;
@@ -325,11 +329,25 @@ const FilterToggle: React.FC<{
   </button>
 );
 const ActiveFilters: React.FC<{
-  badges: Array<{ label: string; onRemove: () => void; icon: any }>;
+  badges: Array<{
+    label: string;
+    onRemove: () => void;
+    icon: any;
+    key?: keyof SearchFilters;
+  }>;
   selectedPreset: string | null;
   activeCount: number;
   onClearAll: () => void;
-}> = ({ badges, selectedPreset, activeCount, onClearAll }) => {
+  onFilterRemove?: (key: keyof SearchFilters) => void;
+  onClearAllFilters?: () => void;
+}> = ({
+  badges,
+  selectedPreset,
+  activeCount,
+  onClearAll,
+  onFilterRemove,
+  onClearAllFilters,
+}) => {
   const totalCount = selectedPreset ? activeCount + 1 : activeCount;
   if (badges.length === 0 && !selectedPreset) return null;
   return (
@@ -352,7 +370,10 @@ const ActiveFilters: React.FC<{
           Active ({totalCount})
         </span>
         <button
-          onClick={onClearAll}
+          onClick={() => {
+            onClearAll();
+            if (onClearAllFilters) onClearAllFilters();
+          }}
           className="text-xs text-gray-500 hover:text-red-500 transition-colors duration-200 hover:scale-105"
         >
           Clear All
@@ -363,7 +384,13 @@ const ActiveFilters: React.FC<{
           {badges.map((badge, index) => (
             <button
               key={index}
-              onClick={badge.onRemove}
+              onClick={() => {
+                if (onFilterRemove && badge.key) {
+                  onFilterRemove(badge.key);
+                } else {
+                  badge.onRemove();
+                }
+              }}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all duration-200 bg-primary/10 text-primary hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 text-xs font-medium group/badge hover:scale-105"
             >
               <FontAwesomeIcon icon={badge.icon} className="h-2.5 w-2.5" />
@@ -386,7 +413,16 @@ const AdvancedFilters: React.FC<{
   isLoading: boolean;
   onFilterChange: (key: keyof SearchFilters, value: any) => void;
   onClose: () => void;
-}> = ({ filters, isLoading, onFilterChange, onClose }) => (
+  onCategorySelect: (categoryValue: string) => void;
+  onLocationSelect: (locationValue: string) => void;
+}> = ({
+  filters,
+  isLoading,
+  onFilterChange,
+  onClose,
+  onCategorySelect,
+  onLocationSelect,
+}) => (
   <div
     className="mt-4 bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-md border border-gray-200/60 dark:border-gray-700/60 rounded-xl shadow-xl p-4 animate-elegant-fade-up opacity-0"
     style={{ animationDelay: "50ms" }}
@@ -397,7 +433,7 @@ const AdvancedFilters: React.FC<{
           icon={faSliders}
           className="h-3.5 w-3.5 text-primary"
         />
-        Advanced Filters
+        Filters
       </h3>
       <button
         type="button"
@@ -416,12 +452,19 @@ const AdvancedFilters: React.FC<{
         <Select
           options={CATEGORY_OPTIONS}
           value={filters.category || ""}
-          onValueChange={(value) => onFilterChange("category", value)}
+          onValueChange={(value) => {
+            if (value) {
+              onCategorySelect(value);
+            } else {
+              onFilterChange("category", undefined);
+            }
+          }}
           state={SelectState.DEFAULT}
           disabled={isLoading}
-          className="rounded-lg text-sm"
+          className="rounded-lg text-sm bg-card"
         />
       </div>
+
       <div className="space-y-2">
         <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
           <FontAwesomeIcon icon={faStar} className="h-3 w-3 text-amber-500" />
@@ -430,12 +473,39 @@ const AdvancedFilters: React.FC<{
         <Select
           options={CONDITION_OPTIONS}
           value={filters.condition || ""}
-          onValueChange={(value) => onFilterChange("condition", value)}
+          onValueChange={(value) =>
+            onFilterChange("condition", value || undefined)
+          }
           state={SelectState.DEFAULT}
           disabled={isLoading}
-          className="rounded-lg text-sm"
+          className="rounded-lg text-sm bg-card"
         />
       </div>
+
+      <div className="space-y-2">
+        <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
+          <FontAwesomeIcon
+            icon={faMapMarkerAlt}
+            className="h-3 w-3 text-green-500"
+          />
+          Location
+        </label>
+        <Select
+          options={LOCATION_OPTIONS}
+          value={filters.location || ""}
+          onValueChange={(value) => {
+            if (value) {
+              onLocationSelect(value);
+            } else {
+              onFilterChange("location", undefined);
+            }
+          }}
+          state={SelectState.DEFAULT}
+          disabled={isLoading}
+          className="rounded-lg text-sm bg-card"
+        />
+      </div>
+
       <div className="space-y-2">
         <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
           <FontAwesomeIcon
@@ -452,28 +522,10 @@ const AdvancedFilters: React.FC<{
           }
           state={SelectState.DEFAULT}
           disabled={isLoading}
-          className="rounded-lg text-sm"
+          className="rounded-lg text-sm bg-card"
         />
       </div>
-      <div className="space-y-2">
-        <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
-          <FontAwesomeIcon
-            icon={faMapMarkerAlt}
-            className="h-3 w-3 text-green-500"
-          />
-          Location
-        </label>
-        <input
-          type="text"
-          value={filters.location || ""}
-          onChange={(e) =>
-            onFilterChange("location", e.target.value || undefined)
-          }
-          placeholder="Enter city..."
-          disabled={isLoading}
-          className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200"
-        />
-      </div>
+
       <div className="space-y-2 sm:col-span-2">
         <label className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
           <FontAwesomeIcon
@@ -494,7 +546,7 @@ const AdvancedFilters: React.FC<{
               })
             }
             disabled={isLoading}
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200/60 dark:border-gray-700/60 bg-card text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200"
           />
           <input
             type="number"
@@ -507,11 +559,12 @@ const AdvancedFilters: React.FC<{
               })
             }
             disabled={isLoading}
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200/60 dark:border-gray-700/60 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200/60 dark:border-gray-700/60 bg-card text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-200"
           />
         </div>
       </div>
     </div>
+
     <div className="mt-4 pt-3 border-t border-gray-200/60 dark:border-gray-700/60">
       <div className="flex items-center justify-between text-xs">
         <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
@@ -519,8 +572,23 @@ const AdvancedFilters: React.FC<{
             icon={faCheck}
             className="h-3 w-3 text-emerald-500"
           />
-          {Object.keys(filters).length} active filter
-          {Object.keys(filters).length !== 1 ? "s" : ""}
+          {
+            Object.keys(filters).filter(
+              (key) =>
+                filters[key as keyof SearchFilters] !== undefined &&
+                filters[key as keyof SearchFilters] !== null &&
+                filters[key as keyof SearchFilters] !== ""
+            ).length
+          }{" "}
+          active filter
+          {Object.keys(filters).filter(
+            (key) =>
+              filters[key as keyof SearchFilters] !== undefined &&
+              filters[key as keyof SearchFilters] !== null &&
+              filters[key as keyof SearchFilters] !== ""
+          ).length !== 1
+            ? "s"
+            : ""}
         </span>
         {isLoading && (
           <span className="flex items-center gap-1.5 text-primary">
@@ -561,13 +629,23 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   isLoading = false,
   showPresets = true,
   showSuggestions = true,
+  onFilterRemove,
+  onClearAllFilters,
 }) => {
   const { state, updateState } = useSearchState(initialQuery, initialFilters);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const updateSearchFilters = useLoopItStore(
     (state) => state.updateSearchFilters
   );
+  const router = useRouter();
+
   const searchInputWrapperRef = React.useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (JSON.stringify(state.filters) !== JSON.stringify(initialFilters)) {
+      updateState({ filters: initialFilters });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFilters]);
   useEffect(() => {
     if (autoFocus && searchInputRef.current) {
       searchInputRef.current.focus();
@@ -612,7 +690,12 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   ]);
   const handleFilterChange = useCallback(
     (key: keyof SearchFilters, value: any) => {
-      const newFilters = { ...state.filters, [key]: value };
+      const newFilters = { ...state.filters };
+      if (value === undefined || value === "") {
+        delete newFilters[key];
+      } else {
+        newFilters[key] = value;
+      }
       updateState({
         filters: newFilters,
         selectedPreset: null,
@@ -621,6 +704,27 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
       onSearch?.(state.query, newFilters);
     },
     [state.filters, state.query, onFiltersChange, onSearch, updateState]
+  );
+  const handleCategorySelect = useCallback(
+    (categoryValue: string) => {
+      if (categoryValue) {
+        router.push(`/items/?category=${encodeURIComponent(categoryValue)}`);
+      } else {
+        router.push(`/items`);
+      }
+    },
+    [router]
+  );
+
+  const handleLocationSelect = useCallback(
+    (locationValue: string) => {
+      if (locationValue) {
+        router.push(`/items/?location=${encodeURIComponent(locationValue)}`);
+      } else {
+        router.push(`/items`);
+      }
+    },
+    [router]
   );
   const handlePresetSelect = useCallback(
     (presetId: string) => {
@@ -635,18 +739,22 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
     [state.query, onFiltersChange, onSearch, updateState]
   );
   const handleClearAll = useCallback(() => {
-    updateState({
-      filters: {},
-      selectedPreset: null,
-      query: "",
-    });
-    onFiltersChange?.({});
-    onSearch?.("", {});
-    onClear?.();
-  }, [onFiltersChange, onSearch, onClear, updateState]);
+    if (onClearAllFilters) {
+      onClearAllFilters();
+    } else {
+      updateState({ filters: {}, selectedPreset: null, query: "" });
+      onFiltersChange?.({});
+      onSearch?.("", {});
+      onClear?.();
+    }
+  }, [onClearAllFilters, updateState, onFiltersChange, onSearch, onClear]);
   const activeBadges = useMemo(() => {
-    const badges: Array<{ label: string; onRemove: () => void; icon: any }> =
-      [];
+    const badges: Array<{
+      label: string;
+      onRemove: () => void;
+      icon: any;
+      key?: keyof SearchFilters;
+    }> = [];
     if (state.filters.category) {
       const categoryOption = CATEGORY_OPTIONS.find(
         (opt) => opt.value === state.filters.category
@@ -654,7 +762,8 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
       badges.push({
         label: categoryOption?.label || state.filters.category,
         icon: faTag,
-        onRemove: () => handleFilterChange("category", ""),
+        onRemove: () => handleFilterChange("category", undefined),
+        key: "category",
       });
     }
     if (state.filters.condition) {
@@ -664,14 +773,16 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
       badges.push({
         label: conditionOption?.label || state.filters.condition,
         icon: faStar,
-        onRemove: () => handleFilterChange("condition", ""),
+        onRemove: () => handleFilterChange("condition", undefined),
+        key: "condition",
       });
     }
     if (state.filters.location) {
       badges.push({
         label: state.filters.location,
         icon: faMapMarkerAlt,
-        onRemove: () => handleFilterChange("location", ""),
+        onRemove: () => handleFilterChange("location", undefined),
+        key: "location",
       });
     }
     if (state.filters.radius) {
@@ -681,7 +792,8 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
       badges.push({
         label: distanceOption?.label || state.filters.radius + "km",
         icon: faMapMarkerAlt,
-        onRemove: () => handleFilterChange("radius", ""),
+        onRemove: () => handleFilterChange("radius", undefined),
+        key: "radius",
       });
     }
     if (
@@ -694,6 +806,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
         label: `$${min} - $${max}`,
         icon: faDollarSign,
         onRemove: () => handleFilterChange("priceRange", {}),
+        key: "priceRange",
       });
     }
     return badges;
@@ -734,6 +847,17 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
           placeholder={placeholder}
           isLoading={isLoading || state.query.trim().length >= 3}
           inputRef={searchInputRef}
+          filterToggle={
+            showAdvancedFilters ? (
+              <FilterToggle
+                isOpen={state.isAdvancedOpen}
+                activeCount={activeFiltersCount}
+                onToggle={() =>
+                  updateState({ isAdvancedOpen: !state.isAdvancedOpen })
+                }
+              />
+            ) : undefined
+          }
         />
         <SearchSuggestions
           show={showSuggestions && state.showSuggestionsPanel}
@@ -746,36 +870,21 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
           }}
           anchorRef={searchInputWrapperRef}
         />
-        <div className="flex items-center gap-3 mt-3">
-          {showPresets && (
-            <div className="flex-1 min-w-0">
-              <FilterPresets
-                selectedPreset={state.selectedPreset}
-                onSelect={handlePresetSelect}
-              />
-            </div>
-          )}
-          {showAdvancedFilters && (
-            <FilterToggle
-              isOpen={state.isAdvancedOpen}
-              activeCount={activeFiltersCount}
-              onToggle={() =>
-                updateState({ isAdvancedOpen: !state.isAdvancedOpen })
-              }
-            />
-          )}
-        </div>
         <ActiveFilters
           badges={activeBadges}
           selectedPreset={state.selectedPreset}
           activeCount={activeFiltersCount}
           onClearAll={handleClearAll}
+          onFilterRemove={onFilterRemove}
+          onClearAllFilters={onClearAllFilters}
         />
         {showAdvancedFilters && state.isAdvancedOpen && (
           <AdvancedFilters
             filters={state.filters}
             isLoading={isLoading}
             onFilterChange={handleFilterChange}
+            onCategorySelect={handleCategorySelect}
+            onLocationSelect={handleLocationSelect}
             onClose={() => updateState({ isAdvancedOpen: false })}
           />
         )}

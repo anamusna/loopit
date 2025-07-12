@@ -1,6 +1,7 @@
 "use client";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import Button, {
   ButtonSize,
   ButtonVariant,
@@ -99,6 +100,8 @@ const prohibitedItems = [
 ];
 export default function Guidelines() {
   const router = useRouter();
+  const { openLogin, openRegister } = useAuthModal();
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -269,7 +272,7 @@ export default function Guidelines() {
                     <Button
                       variant={ButtonVariant.PRIMARY}
                       size={ButtonSize.LG}
-                      onClick={() => router.push("/register")}
+                      onClick={openRegister}
                       className="group"
                     >
                       <FontAwesomeIcon icon={faUserFriends} className="mr-2" />
@@ -292,6 +295,8 @@ export default function Guidelines() {
         </section>
       </main>
       <Footer />
+
+      {/* Auth Modal */}
     </div>
   );
 }

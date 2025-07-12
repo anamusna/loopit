@@ -1,6 +1,7 @@
 "use client";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { useAuthModal } from "@/components/auth/AuthModalContext";
 import Button, {
   ButtonSize,
   ButtonVariant,
@@ -62,6 +63,8 @@ const benefits = [
 ];
 export default function HowItWorks() {
   const router = useRouter();
+  const { openLogin, openRegister } = useAuthModal();
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -86,7 +89,7 @@ export default function HowItWorks() {
               <Button
                 variant={ButtonVariant.PRIMARY}
                 size={ButtonSize.LG}
-                onClick={() => router.push("/register")}
+                onClick={() => router.push("/items")}
                 className="group transform hover:scale-105 transition-all duration-300"
               >
                 Start Swapping Now
@@ -195,7 +198,7 @@ export default function HowItWorks() {
                     <Button
                       variant={ButtonVariant.PRIMARY}
                       size={ButtonSize.LG}
-                      onClick={() => router.push("/register")}
+                      onClick={openRegister}
                       className="group"
                     >
                       Create Free Account
@@ -221,10 +224,7 @@ export default function HowItWorks() {
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
                   <div className="flex items-center gap-2 text-text-muted text-sm">
                     <FontAwesomeIcon icon={faHeart} className="text-red-500" />
-                    <span>
-                      Join {Math.floor(Math.random() * 5000 + 10000)} happy
-                      swappers
-                    </span>
+                    <span>Join 12,500+ happy swappers</span>
                     <FontAwesomeIcon icon={faLeaf} className="text-success" />
                   </div>
                 </div>
